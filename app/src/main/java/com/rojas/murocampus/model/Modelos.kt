@@ -10,4 +10,27 @@ data class Usuario(
     val email: String
 )
 
-// TODO Paso 2: Post, Comentario y NuevoPost
+@Serializable
+data class Post(
+    val userId: Int,
+    val id: Int,
+    val title: String,
+    val body: String
+)
+
+@Serializable
+data class Comentario(
+    val postId: Int,
+    val id: Int,
+    val name: String,
+    val email: String,
+    val body: String
+)
+
+// Lo que enviamos al crear: no lleva id, el servidor lo asigna
+@Serializable
+data class NuevoPost(
+    val userId: Int,
+    val title: String,
+    val body: String
+)
