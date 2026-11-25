@@ -23,6 +23,10 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
     private val _usuarioFiltro = MutableStateFlow<Int?>(null)
     val usuarioFiltro = _usuarioFiltro.asStateFlow()
 
+    // texto para buscar por titulo en las publicaciones ya descargadas
+    private val _busqueda = MutableStateFlow("")
+    val busqueda = _busqueda.asStateFlow()
+
     private val _detalle = MutableStateFlow<UiState<DetalleUi>>(UiState.Cargando)
     val detalle = _detalle.asStateFlow()
 
@@ -108,4 +112,13 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
     fun limpiarBorrado() {
         _borrado.value = null
     }
+
+    fun buscar(texto: String) {
+        _busqueda.value = texto
+    }
+
+    // filtra sin volver a llamar a la API
+    fun aplicarBusqueda(posts: List<Post>, texto: String): List<Post> =
+        if (texto.isBlank()) posts
+        else posts.filter { it.title.contains(texto.trim(), ignoreCase = true) }
 }

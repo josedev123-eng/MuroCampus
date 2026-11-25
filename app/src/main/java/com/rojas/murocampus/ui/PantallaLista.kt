@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -12,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,8 +31,19 @@ import com.rojas.murocampus.viewmodel.UiState
 fun PantallaLista(vm: PostsViewModel, onAbrir: (Int) -> Unit) {
     val estado by vm.lista.collectAsStateWithLifecycle()
     val filtro by vm.usuarioFiltro.collectAsStateWithLifecycle()
+    val busqueda by vm.busqueda.collectAsStateWithLifecycle()
 
     Column {
+        OutlinedTextField(
+            value = busqueda,
+            onValueChange = { vm.buscar(it) },
+            label = { Text("Buscar por título") },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, top = 8.dp)
+        )
+
         // Fila de chips: Todos y Usuario 1 a Usuario 10
         LazyRow(
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
@@ -61,13 +75,14 @@ fun PantallaLista(vm: PostsViewModel, onAbrir: (Int) -> Unit) {
             is UiState.Cargando -> Cargando()
             is UiState.Error -> ErrorConReintento(e.mensaje, onReintentar = { vm.cargar() })
             is UiState.Exito -> {
-                if (e.datos.isEmpty()) {
+                val posts = vm.aplicarBusqueda(e.datos, busqueda)
+                if (posts.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("Sin publicaciones")
                     }
                 } else {
                     LazyColumn(contentPadding = PaddingValues(bottom = 80.dp)) {
-                        items(e.datos) { post ->
+                        items(posts) { post ->
                             TarjetaPost(
                                 usuario = post.userId,
                                 titulo = post.title,
