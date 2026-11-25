@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rojas.murocampus.data.PostRepository
 import com.rojas.murocampus.model.Comentario
+import com.rojas.murocampus.model.NuevoPost
 import com.rojas.murocampus.model.Post
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -24,6 +25,10 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
 
     private val _detalle = MutableStateFlow<UiState<DetalleUi>>(UiState.Cargando)
     val detalle = _detalle.asStateFlow()
+
+    // null = todavia no se envio nada
+    private val _creado = MutableStateFlow<UiState<Post>?>(null)
+    val creado = _creado.asStateFlow()
 
     private var trabajoDetalle: Job? = null
 
@@ -64,5 +69,19 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
                 _detalle.value = UiState.Error(mensajeDe(error ?: Exception()))
             }
         }
+    }
+
+    fun publicar(titulo: String, texto: String) {
+        viewModelScope.launch {
+            _creado.value = UiState.Cargando
+            val nuevo = NuevoPost(userId = 1, title = titulo, body = texto)
+            repo.crear(nuevo)
+                .onSuccess { _creado.value = UiState.Exito(it) }
+                .onFailure { _creado.value = UiState.Error(mensajeDe(it)) }
+        }
+    }
+
+    fun limpiarCreado() {
+        _creado.value = null
     }
 }
