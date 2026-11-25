@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -29,11 +31,20 @@ import com.rojas.murocampus.viewmodel.PostsViewModel
 import com.rojas.murocampus.viewmodel.UiState
 
 @Composable
-fun PantallaDetalle(vm: PostsViewModel, id: Int) {
+fun PantallaDetalle(vm: PostsViewModel, id: Int, onVolver: () -> Unit) {
     // cada vez que cambia el id se pide el detalle
     LaunchedEffect(id) { vm.abrir(id) }
 
     val estado by vm.detalle.collectAsStateWithLifecycle()
+    val borrado by vm.borrado.collectAsStateWithLifecycle()
+
+    // si se elimino bien, regresamos a la lista
+    LaunchedEffect(borrado) {
+        if (borrado is UiState.Exito) {
+            vm.limpiarBorrado()
+            onVolver()
+        }
+    }
 
     when (val e = estado) {
         is UiState.Cargando -> Cargando("Cargando publicación…")
@@ -60,6 +71,20 @@ fun PantallaDetalle(vm: PostsViewModel, id: Int) {
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(text = post.body, fontSize = 14.sp, color = TextoGris)
                         }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = { vm.borrar(post.id) },
+                        enabled = borrado !is UiState.Cargando,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Eliminar")
+                    }
+                    val b = borrado
+                    if (b is UiState.Error) {
+                        Text(text = b.mensaje, color = MaterialTheme.colorScheme.error)
                     }
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(

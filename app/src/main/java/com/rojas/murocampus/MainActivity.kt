@@ -64,8 +64,11 @@ class MainActivity : ComponentActivity() {
                             }
                             PantallaCrear(vm)
                         } else if (id != null) {
-                            BackHandler { idSeleccionado = null }
-                            PantallaDetalle(vm, id)
+                            BackHandler {
+                                vm.limpiarBorrado()
+                                idSeleccionado = null
+                            }
+                            PantallaDetalle(vm, id, onVolver = { idSeleccionado = null })
                         } else {
                             PantallaLista(vm, onAbrir = { idSeleccionado = it })
                         }

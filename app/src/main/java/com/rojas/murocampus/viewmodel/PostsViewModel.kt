@@ -30,6 +30,10 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
     private val _creado = MutableStateFlow<UiState<Post>?>(null)
     val creado = _creado.asStateFlow()
 
+    // null = no se ha pedido borrar
+    private val _borrado = MutableStateFlow<UiState<Unit>?>(null)
+    val borrado = _borrado.asStateFlow()
+
     private var trabajoDetalle: Job? = null
 
     init { cargar() }
@@ -83,5 +87,25 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
 
     fun limpiarCreado() {
         _creado.value = null
+    }
+
+    fun borrar(id: Int) {
+        viewModelScope.launch {
+            _borrado.value = UiState.Cargando
+            repo.borrar(id)
+                .onSuccess {
+                    // JSONPlaceholder no borra de verdad, asi que lo quitamos de la lista ya cargada
+                    val actual = _lista.value
+                    if (actual is UiState.Exito) {
+                        _lista.value = UiState.Exito(actual.datos.filter { it.id != id })
+                    }
+                    _borrado.value = UiState.Exito(Unit)
+                }
+                .onFailure { _borrado.value = UiState.Error(mensajeDe(it)) }
+        }
+    }
+
+    fun limpiarBorrado() {
+        _borrado.value = null
     }
 }
