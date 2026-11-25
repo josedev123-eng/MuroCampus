@@ -3,6 +3,7 @@ package com.rojas.murocampus
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
@@ -15,9 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rojas.murocampus.ui.PantallaDetalle
 import com.rojas.murocampus.ui.PantallaLista
 import com.rojas.murocampus.ui.theme.MuroCampusTheme
 import com.rojas.murocampus.viewmodel.PostsViewModel
@@ -30,13 +36,21 @@ class MainActivity : ComponentActivity() {
         setContent {
             MuroCampusTheme {
                 val vm: PostsViewModel = viewModel(factory = PostsViewModelFactory())
+                // null = se ve la lista, un numero = se ve el detalle de ese post
+                var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = { BarraSuperior() }
                 ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        PantallaLista(vm)
+                        val id = idSeleccionado
+                        if (id != null) {
+                            BackHandler { idSeleccionado = null }
+                            PantallaDetalle(vm, id)
+                        } else {
+                            PantallaLista(vm, onAbrir = { idSeleccionado = it })
+                        }
                     }
                 }
             }

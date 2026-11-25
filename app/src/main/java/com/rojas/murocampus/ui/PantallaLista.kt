@@ -12,7 +12,7 @@ import com.rojas.murocampus.viewmodel.UiState
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PantallaLista(vm: PostsViewModel) {
+fun PantallaLista(vm: PostsViewModel, onAbrir: (Int) -> Unit) {
     val estado by vm.lista.collectAsStateWithLifecycle()
 
     when (val e = estado) {
@@ -25,7 +25,8 @@ fun PantallaLista(vm: PostsViewModel) {
                         usuario = post.userId,
                         titulo = post.title,
                         cuerpo = post.body,
-                        maxLineas = 2
+                        maxLineas = 2,
+                        onClick = { onAbrir(post.id) }
                     )
                 }
             }
