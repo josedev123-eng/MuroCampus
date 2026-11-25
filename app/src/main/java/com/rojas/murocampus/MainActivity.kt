@@ -17,7 +17,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rojas.murocampus.ui.PantallaLista
 import com.rojas.murocampus.ui.theme.MuroCampusTheme
+import com.rojas.murocampus.viewmodel.PostsViewModel
+import com.rojas.murocampus.viewmodel.PostsViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,12 +29,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT))
         setContent {
             MuroCampusTheme {
+                val vm: PostsViewModel = viewModel(factory = PostsViewModelFactory())
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = { BarraSuperior() }
                 ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        // Aqui van las pantallas del laboratorio
+                        PantallaLista(vm)
                     }
                 }
             }
